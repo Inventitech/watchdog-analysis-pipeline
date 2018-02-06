@@ -1,0 +1,121 @@
+---
+title: "Your WatchDog Project Report"
+geometry: margin=1in
+output: html_document
+fontsize: 10pt
+---
+
+```{r preample, include=FALSE}
+values  <- project.report.values(pid, mongo.conn)
+project <- project.entry(values$project.id, mongo.conn)
+
+
+intervals <- get.intervals(pid, c(), super.processor, mongo.conn)
+intervals$ts <- as.POSIXct(intervals$ts / 1000, origin = '1970-1-1')
+intervals$te <- as.POSIXct(intervals$te / 1000, origin = '1970-1-1')
+
+project.timeline <- timeline(intervals, label.col = 'it', group.col = 'it',
+                             start.col = 'ts', end.col = 'te',
+                             display.label = F, border.linetype=0)
+```
+
+![alt text](http://testroots.org/assets/img/watchdog_big.png "WatchDog Logo")
+
+
+Dear WatchDog User,
+
+It's a pleasure for us to present to you our findings about your personal
+testing behavior. If you have any questions, please drop us a line. We would
+love to be in contact with you! Projects reports are created and updated once
+every day.
+
+Many greetings from Delft,
+
+Moritz, Georgios, Annibale, Igor and Andy from [TestRoots.org](http://testroots.org)
+
+![alt text](http://testroots.org/assets/img/tu_delft_logo_black.png "TU Delft Logo")
+
+------------
+
+This is the WatchDog Report based on your data submitted for your project
+`r project$name` under the project id “`r values$project.id`”.
+
+
+
+> **Summary of your project “`r project$name`”**
+>
+> You worked `r round(values$perc.time.test)`% of your time on testing, and
+> `r round(values$perc.time.prod)`% on production code (you originally estimated
+> `r values$perc.time.test.est`% testing, `r values$perc.time.prod.est`%
+> production). 
+>
+> You executed your tests on average
+> `r round(values$num.test.executions.per.day,2)` times per development day, and the average
+> execution time for one such test execution was `r round(values$avg.test.duration,2)`
+> seconds. `r round(values$perc.test.failures)`% of your test executions failed.
+>
+>
+> You `r values$tdd.frequency.word` develop in a Test-Driven manner.
+
+```{r timeline, include=T, fig.align='center', warning=FALSE, dpi=100, fig.retina=2, echo=FALSE, fig.cap="An overview of your activity timeline"}
+project.timeline
+```
+The graph shows a timeline outline of your development activity registered with WatchDog.
+
+<p><br><br></p>
+
+> <img src="http://testroots.org/assets/img/tdd.png" align="left"> **Summary of your Test-Driven Development Practices**
+>
+> You followed Test-Driven Development (TDD) `r replaceNABy0(round(values$tdd.frequency,2))`% of your development changes (so, in words, `r values$tdd.frequency.word`). With this TDD followship, your project is in the top `r sum(mean.project.values$projects.tdd.frequency>=values$tdd.frequency)`
+(`r round(100-sum(mean.project.values$projects.tdd.frequency<values$tdd.frequency)/length(mean.project.values$projects.tdd.frequency)*100,2)`%) 
+of all WatchDog projects. Your TDD cycle is made up of `r replaceNABy0(round(values$tdd.refactoring.perc,2))`% refactoring and `r replaceNABy0(round(values$tdd.test.perc,2))`% testing phase.
+
+<p><br><br></p>
+
+# Detailed Statistics
+
+In the following table, you can find more detailed statistics on your project.
+
+Description                             | Your value                         |  Mean                                                       |
+----------------------------------------|:-----------------------------------|:-----------------------------------------------------------:|
+Total time in which WatchDog was active |`r values$total.time`h      	     | `r floor(mean.project.values$mean.total.time)`h             |
+Time averaged per day                   |`r values$avg.per.day`h / day 	     | `r round(mean.project.values$mean.avg.per.day,1)`h / day      |
+
+General Development Behavior            | Your value                         	    | Mean                                                         |
+----------------------------------------|:-----------------------------------------:|:------------------------------------------------------------:|
+Active Eclipse Usage (of the time Eclipse was open)                   |`r round(values$active.eclipse.usage)`%    | `r floor(mean.project.values$mean.active.eclipse.usage)`%    |
+Time spent Writing                      |`r round(values$perc.time.spent.typing)`%  | `r floor(mean.project.values$mean.perc.time.spent.typing)`%  |
+Time spent Reading                      |`r round(values$perc.time.spent.reading)`% | `r floor(mean.project.values$mean.perc.time.spent.reading)`% |
+
+Java Development Behavior              | Your value                      	| Mean                                                        |
+----------------------------------------|:-------------------------------------:|:-----------------------------------------------------------:|
+Time spent writing Java code            |`r round(values$perc.time.java.write)`%| `r floor(mean.project.values$mean.perc.time.java.write)`%   |
+Time spent reading Java code            |`r round(values$perc.time.java.read)`%	| `r floor(mean.project.values$mean.perc.time.java.read)`%    |
+Time spent in debug mode                |`r round(values$time.debugging/values$total.time)`% (`r values$time.debugging`h)	        | `r floor(mean.project.values$mean.time.debugging)`h         |
+
+Testing Behavior                       | Your value                      	     		       | Mean                                                          |
+----------------------------------------|:------------------------------------------------------------:|:-------------------------------------------------------------:|
+Estimated Time Working on Tests         |`r values$perc.time.test.est`%				       |`r floor(mean.project.values$mean.perc.time.test.est)`%        |
+Actual time working on testing          |`r round(values$perc.time.test)`%   	    		       |`r floor(mean.project.values$mean.perc.time.test)`%            |
+Estimated Time Working on Production    |`r values$perc.time.prod.est`%             		       |`r floor(mean.project.values$mean.perc.time.prod.est)`%        |
+Actual time spent on production code    |`r round(values$perc.time.prod)`% 	 		       |`r floor(mean.project.values$mean.perc.time.prod)`%            |
+
+Test Execution Behavior                | Your value                      	     		       | Mean                                                          |
+----------------------------------------|:------------------------------------------------------------:|:-------------------------------------------------------------:|
+Number of test executions               |`r values$num.test.executions`			               |`r round(mean.project.values$mean.num.test.executions)`  |
+Number of test executions per day       |`r values$num.test.executions.per.day`/day	               |`r round(mean.project.values$mean.num.test.executions.per.day,2)`/day  |
+Number of failing tests                 |`r values$num.test.failures` (`r round(values$perc.test.failures)`%)     	      		       |`r round(mean.project.values$mean.num.test.failures, 2)` (`r round(mean.project.values$mean.num.test.failures/mean.project.values$mean.num.test.executions*100)`%)        |
+Average test run duration               |`r round(values$avg.test.duration,2)` sec		       |`r round(mean.project.values$mean.avg.test.duration,2)` sec      |
+
+Debugging Behavior                | Your value                      	     		       | Mean                                                          |
+----------------------------------------|:------------------------------------------------------------:|:-------------------------------------------------------------:|
+Number of debugging sessions            |`r values$num.debug.sessions`               |`r round(mean.project.values$mean.num.debug.sessions)`   |
+Total duration of debugging sessions    |`r round(values$time.debug.sessions,1)` seconds      |`r round(mean.project.values$mean.time.debug.sessions,1)` seconds |
+Average debugging session duration      |`r round(values$avg.debug.session.duration,1)` seconds |`r round(mean.project.values$mean.avg.debug.session.duration,1)` seconds|
+
+
+------------
+[TestRoots.org](http://testroots.org) WatchDog Project Report generated `r format(Sys.time(), "%b %d %Y")`
+
+![alt text](http://testroots.org/assets/img/tu_delft_logo_black.png "TU Delft Logo")
+
